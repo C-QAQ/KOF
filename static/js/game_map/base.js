@@ -16,6 +16,17 @@ export class GameMap extends GameObject {
         this.start();
 
         this.contorller = new Contorller(this.$canvas);
+
+        this.root.$kof.append($(`
+        <div class="kof-head">
+            <div class="kof-hp-0"><div></div></div>
+            <div class="kof-timer">60</div>
+            <div class="kof-hp-1"><div></div></div>
+        </div>
+        `));
+
+        this.game_time = 60000;
+        this.$timer = $(`.kof-timer`);
     }
 
     start() {
@@ -23,6 +34,19 @@ export class GameMap extends GameObject {
     }
 
     update() {
+        this.game_time -= this.timedelta;
+
+        if (this.game_time < 0) {
+            this.game_time = 0;
+            let [a, b] = this.root.players;
+            if (a.status !== 6 && b.status !== 6) {
+                a.status = b.status = 6;
+                a.frame_current_cnt = b.frame_current_cnt = 0;
+                a.vx = b.vx = 0;
+            }
+        }
+        
+        this.$timer.text(parseInt(this.game_time / 1000));
         this.render();
     }
 

@@ -33,10 +33,37 @@ export class Player extends GameObject {
 
         this.animations = new Map();    //  存储动作对应的gif
         this.frame_current_cnt = 0; //  当前渲染某个动作的第几帧
+
+        this.hp = 1000;
+        this.$hp = $(`.kof-hp-${this.id}>div`);
     }
 
     start() {
 
+    }
+
+    is_collision(r1, r2) {
+        if (Math.max(r1.x1, r2.x1) > Math.min(r1.x2, r2.x2))
+            return false;
+        if (Math.max(r1.y1, r2.y1) > Math.min(r1.y2, r2.y2))
+            return false;
+        return true;
+    }
+
+    is_attack(damage) {
+        if (this.status === 6) return;
+        this.status = 5;
+        this.frame_current_cnt = 0;
+        this.hp -= damage;
+
+        this.$hp.animate({
+            width: this.$hp.parent().width() * this.hp / 1000
+        }, 200);
+        if (this.hp <= 0) {
+            this.status = 6;
+            this.frame_current_cnt = 0;
+            this.vx = 0;
+        }
     }
 
     update_direction() {
@@ -92,16 +119,15 @@ export class Player extends GameObject {
     }
 
     update_move() {
-        if (this.status === 3) {
-            this.vy += this.gravity;
-        }
+        this.vy += this.gravity;
 
         this.x += this.vx * this.timedelta / 1000;
         this.y += this.vy * this.timedelta / 1000;
         if (this.y > 450) { //  地板限制
             this.y = 449;
             this.vy = 0;
-            this.status = 0;
+            if (this.status === 3)
+                this.status = 0;
         }
 
         if (this.x < 0) {   //  墙面限制
@@ -114,10 +140,48 @@ export class Player extends GameObject {
         }
     }
 
+    update_attack() {
+        if (this.status === 4 && this.frame_current_cnt === 46) {
+            let [me, you] = [this, this.root.players[1 - this.id]];
+            let r1;
+            if (this.direction > 0) {   //  正方向的 damage 范围
+                r1 = {  //  伤害范围
+                    x1: me.x + 205,
+                    y1: me.y + 40,
+                    x2: me.x + 205 + 20,
+                    y2: me.y + 40 + 20,
+                }
+            } else {    //  反方向 damage 范围
+                r1 = {
+                    x1: me.x + me.width - 205 - 20,
+                    y1: me.y + 40,
+                    x2: me.x + me.width - 205 - 20 + 20,
+                    y2: me.y + 40 + 20,
+                }
+            }
+
+            let r2 = {  //  敌方 body 范围
+                x1: you.x,
+                y1: you.y,
+                x2: you.x + you.width,
+                y2: you.y + you.height,
+            }
+
+            if (this.is_collision(r1, r2)) {
+                you.is_attack(200);
+            }
+        }
+    }
+
     update() {
-        this.update_direction();
-        this.update_control();
-        this.update_move();
+        if (this.status !== 6) {
+            this.update_direction();
+            this.update_control();
+            this.update_move();
+            this.update_attack();
+        }
+        
+
         this.render();
     }
 
@@ -156,14 +220,21 @@ export class Player extends GameObject {
                 this.ctx.restore();
             }
             
+
+            if (status === 4 || status === 5 || status === 6) { //  攻击动作每次只进行一次
+                if (this.frame_current_cnt === obj.frame_rate * (obj.frame_cnt - 1)) {
+                    if (status === 6) {
+                        this.frame_current_cnt -- ;
+                    } else {
+                        this.frame_current_cnt = 0;
+                        this.status = 0;
+                    }
+                }
+            }
+
             this.frame_current_cnt ++ ;
         }
 
-        if (status === 4) { //  攻击动作每次只进行一次
-            if (this.frame_current_cnt === obj.frame_rate * (obj.frame_cnt - 1)) {
-                this.frame_current_cnt = 0;
-                this.status = 0;
-            }
-        }
+        
     }
 }

@@ -13,7 +13,7 @@ export class Kyo extends Player {
     }
 
     init_animations() {
-        let offsets = [0, -22, -22, -120, 0, 0, 0];
+        let offsets = [0, -22, -22, -120, 0, -10, 0];
         let frame_rates = [15, 9, 9, 7, 15, 15, 15];
         let outer = this;
         for (let i = 0; i < 7; i ++ ) {
