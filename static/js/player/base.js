@@ -186,15 +186,14 @@ export class Player extends GameObject {
     }
 
     render() {
-        this.ctx.fillStyle = this.color;
-        this.ctx.fillRect(this.x, this.y, this.width, this.height);
+        // this.ctx.fillStyle = this.color;
+        // this.ctx.fillRect(this.x, this.y, this.width, this.height);
 
-        if (this.direction > 0) {
-            this.ctx.fillRect(this.x + 205, this.y + 40, 20, 20);   //  damage 范围
-        } else {
-            this.ctx.fillRect(this.x + this.width - 205 - 20, this.y + 40, 20, 20);   //  damage 范围
-        }
-
+        // if (this.direction > 0) {
+        //     this.ctx.fillRect(this.x + 205, this.y + 40, 20, 20);   //  damage 范围
+        // } else {
+        //     this.ctx.fillRect(this.x + this.width - 205 - 20, this.y + 40, 20, 20);   //  damage 范围
+        // }
 
         let status = this.status;
         if (this.status === 1 && this.direction * this.vx < 0) status = 2;
