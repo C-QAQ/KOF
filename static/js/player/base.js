@@ -124,7 +124,7 @@ export class Player extends GameObject {
         this.x += this.vx * this.timedelta / 1000;
         this.y += this.vy * this.timedelta / 1000;
         if (this.y > 450) { //  地板限制
-            this.y = 449;
+            this.y = 450;
             this.vy = 0;
             if (this.status === 3)
                 this.status = 0;
@@ -174,7 +174,7 @@ export class Player extends GameObject {
     }
 
     update() {
-        if (this.status !== 6) {
+        if (this.status !== 6 && this.status !== 5) {
             this.update_direction();
             this.update_control();
             this.update_move();
@@ -220,9 +220,9 @@ export class Player extends GameObject {
             }
             
 
-            if (status === 4 || status === 5 || status === 6) { //  攻击动作每次只进行一次
+            if (status === 4 || status === 5 || status === 6) { //  攻击, 被打，死亡动作每次只进行一次
                 if (this.frame_current_cnt === obj.frame_rate * (obj.frame_cnt - 1)) {
-                    if (status === 6) {
+                    if (status === 6) { //  死亡时要趴者不起
                         this.frame_current_cnt -- ;
                     } else {
                         this.frame_current_cnt = 0;
