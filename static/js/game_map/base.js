@@ -30,6 +30,5 @@ export class GameMap extends GameObject {
         this.ctx.clearRect(0, 0, this.width, this.height);
         this.ctx.fillStyle = 'green';
         this.ctx.fillRect(0, 0, this.width, this.height);
-        // this.ctx.clear(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     }
 }

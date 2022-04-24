@@ -10,6 +10,7 @@ export class Contorller {
         let outer = this;
 
         this.$canvas.keydown(function (e) {
+            console.log(e.key);
             outer.pressed_keys.add(e.key);
         });
 
