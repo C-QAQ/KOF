@@ -13,6 +13,8 @@ export class Kyo extends Player {
     }
 
     init_animations() {
+        let offsets = [0, -22, -22, -120, 0, 0, 0];
+        let frame_rates = [15, 9, 9, 7, 15, 15, 15];
         let outer = this;
         for (let i = 0; i < 7; i ++ ) {
             let gif = GIF();
@@ -20,8 +22,8 @@ export class Kyo extends Player {
             this.animations.set(i, {
                 gif: gif,
                 frame_cnt: 0,
-                frame_rate: 5,  //  每 5 帧渲染下一帧
-                offset_y: 0,
+                frame_rate: frame_rates[i],  //  每 5 帧渲染下一帧
+                offset_y: offsets[i],
                 loaded: false,
                 scale: 2,
             });

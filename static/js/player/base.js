@@ -23,9 +23,9 @@ export class Player extends GameObject {
         this.ctx = this.root.game_map.ctx;
 
         this.speedx = 400;  //  水平移动速度
-        this.speedy = 1000; //  跳起时的初始速度
+        this.speedy = 1300; //  跳起时的初始速度
 
-        this.gravity = 50; //  重力
+        this.gravity = 40; //  重力
 
         this.pressed_keys = this.root.game_map.contorller.pressed_keys;
 
@@ -37,6 +37,15 @@ export class Player extends GameObject {
 
     start() {
 
+    }
+
+    update_direction() {
+        let players = this.root.players;
+        if (players[0] && players[1]) {
+            let [me, you] = [this, players[1 - this.id]];
+            if (me.x < you.x) this.direction = 1;
+            else this.direction = 0;
+        }
     }
 
     update_control() {
@@ -54,7 +63,11 @@ export class Player extends GameObject {
         }
 
         if (this.status === 0 || this.status === 1) {
-            if (w) {
+            if (space) {
+                this.status = 4;
+                this.vx = 0;
+                this.frame_current_cnt = 0;
+            } else if (w) {
                 if (d) {
                     this.vx = this.speedx;
                 } else if (a) {
@@ -63,6 +76,8 @@ export class Player extends GameObject {
                     this.vx = 0;
                 }
                 this.vy = -this.speedy;
+                this.status = 3;
+                this.frame_current_cnt = 0;
             } else if (d) {
                 this.vx = this.speedx;
                 this.status = 1;
@@ -77,11 +92,14 @@ export class Player extends GameObject {
     }
 
     update_move() {
-        this.vy += this.gravity;
+        if (this.status === 3) {
+            this.vy += this.gravity;
+        }
+
         this.x += this.vx * this.timedelta / 1000;
         this.y += this.vy * this.timedelta / 1000;
         if (this.y > 450) { //  地板限制
-            this.y = 450;
+            this.y = 449;
             this.vy = 0;
             this.status = 0;
         }
@@ -97,24 +115,55 @@ export class Player extends GameObject {
     }
 
     update() {
+        this.update_direction();
         this.update_control();
         this.update_move();
         this.render();
     }
 
     render() {
-        // this.ctx.fillStyle = this.color;
-        // this.ctx.fillRect(this.x, this.y, this.width, this.height);
+        this.ctx.fillStyle = this.color;
+        this.ctx.fillRect(this.x, this.y, this.width, this.height);
+
+        if (this.direction > 0) {
+            this.ctx.fillRect(this.x + 205, this.y + 40, 20, 20);   //  damage 范围
+        } else {
+            this.ctx.fillRect(this.x + this.width - 205 - 20, this.y + 40, 20, 20);   //  damage 范围
+        }
+
 
         let status = this.status;
+        if (this.status === 1 && this.direction * this.vx < 0) status = 2;
 
         let obj = this.animations.get(status);  //  取出相应动作的gif
         if (obj && obj.loaded) {
-            let k = this.frame_current_cnt % obj.frame_cnt;
-            let image = obj.gif.frames[k].image;
-            console.log(image);
-            this.ctx.drawImage(image, this.x, this.y, image.width, image.height);
+
+            if (this.direction > 0) {
+                let k = parseInt(this.frame_current_cnt / obj.frame_rate) % obj.frame_cnt;
+                let image = obj.gif.frames[k].image;
+                this.ctx.drawImage(image, this.x, this.y + obj.offset_y, image.width * obj.scale, image.height * obj.scale);
+
+            } else {    //  反方向
+                this.ctx.save();
+                this.ctx.scale(-1, 1);
+                this.ctx.translate(-this.root.width, 0);
+
+                let k = parseInt(this.frame_current_cnt / obj.frame_rate) % obj.frame_cnt;
+                let image = obj.gif.frames[k].image;
+                this.ctx.drawImage(image, this.root.width - this.x - this.width, this.y + obj.offset_y, image.width * obj.scale, image.height * obj.scale);
+
+
+                this.ctx.restore();
+            }
+            
             this.frame_current_cnt ++ ;
+        }
+
+        if (status === 4) { //  攻击动作每次只进行一次
+            if (this.frame_current_cnt === obj.frame_rate * (obj.frame_cnt - 1)) {
+                this.frame_current_cnt = 0;
+                this.status = 0;
+            }
         }
     }
 }
